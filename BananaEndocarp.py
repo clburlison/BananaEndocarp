@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Banana Peel is a 'nice' GUI built using Tkinter for interacting with mwa2's api.
+BananaEndocarp is a 'nice' GUI built using Tkinter for interacting with mwa2's api.
 It was designed to work in a limited environment such as an NetInstall environment.
 It connects to a mwa2 instance utilizing the API to create a manifest per machine.
 
@@ -48,8 +48,7 @@ listed_manifests = [
                     "manifestC",
                     ]
 mwa2_url = "http://localhost:8000"
-logo_url = "https://cburlison.s3.amazonaws.com/banana-peel.gif"
-temp_logo = "/tmp/logo_url_logo.gif"
+logo_url = "https://cburlison.s3.amazonaws.com/BananaEndocarp.gif"
 
 authorization = "Basic ABBAABAABAABBAAB"
 default_catalog = "production"
@@ -202,14 +201,14 @@ def api_handler(included_manifests, user, display_name):
         else:
             raise BananaError('Error code: %s \n\nNo modifications have been made.' % get_request[0])
 
-class BananaPeel(Frame):
+class BananaEndocarp(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.parent = parent
         self.initUI()
 
     def initUI(self):
-        self.parent.title("Banana Peel")
+        self.parent.title("BananaEndocarp")
         self.pack(fill=BOTH, expand=True)
 
         # If logo_url is not set don't display a logo
@@ -217,7 +216,7 @@ class BananaPeel(Frame):
             # logo = "/tmp/logo_url_logo.gif"
             # (data, local_path) = download_file(logo_url, logo)
             # image = PhotoImage(file=logo)
-            image = PhotoImage(file='/Users/clburlison/Dropbox/src/mine/banana_peel/banana-peel.gif')
+            image = PhotoImage(file='/Users/clburlison/Dropbox/src/mine/BananaEndocarp/BananaEndocarp.gif')
             image_logo = Label(self, image=image)
             image_logo.image = image
             image_logo.grid(row=0, column=0)
@@ -296,7 +295,7 @@ def main():
     # Launch our GUI
     root = Tk()
     root.resizable(0,0) # disable resizing the window
-    app = BananaPeel(root)
+    app = BananaEndocarp(root)
     center(root)
     root.mainloop()
 
