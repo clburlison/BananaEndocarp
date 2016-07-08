@@ -48,7 +48,7 @@ listed_manifests = [
                     "manifestC",
                     ]
 mwa2_url = "http://localhost:8000"
-logo_url = "https://cburlison.s3.amazonaws.com/BananaEndocarp.gif"
+logo_url = "https://raw.githubusercontent.com/clburlison/BananaEndocarp/master/BananaEndocarp.gif"
 
 authorization = "Basic ABBAABAABAABBAAB"
 default_catalog = "production"
@@ -56,8 +56,8 @@ default_managed_installs = []
 default_managed_uninstalls = []
 default_managed_updates = []
 default_optional_installs = []
-show_success_status = True # When set to true, success status messages are displayed. DEFAULT = True
-always_override = False # When set to true, always use values from GUI prompt. DEFAULT = False
+show_success_status = True # When set to True, success status messages are displayed. DEFAULT = True
+always_override = False # When set to True, always override repo manifest with values from GUI prompt. DEFAULT = False
 
 
 class BananaError(Exception):
@@ -178,7 +178,7 @@ def api_handler(included_manifests, user, display_name):
             if choice:
                 delete_request = api_caller(url, machine_serial, 'DELETE')
                 if delete_request[0] == 204:
-                    msg = "SUCESS: We successfully deleted a manifest"
+                    msg = "SUCESS: A manifest was deleted"
                     show_msg(msg)
                 else:
                     print delete_request
@@ -213,10 +213,9 @@ class BananaEndocarp(Frame):
 
         # If logo_url is not set don't display a logo
         try:
-            # logo = "/tmp/logo_url_logo.gif"
-            # (data, local_path) = download_file(logo_url, logo)
-            # image = PhotoImage(file=logo)
-            image = PhotoImage(file='/Users/clburlison/Dropbox/src/mine/BananaEndocarp/BananaEndocarp.gif')
+            logo = "/tmp/logo_url_logo.gif"
+            (data, local_path) = download_file(logo_url, logo)
+            image = PhotoImage(file=logo)
             image_logo = Label(self, image=image)
             image_logo.image = image
             image_logo.grid(row=0, column=0)
