@@ -1,4 +1,9 @@
 # BananaEndocarp
-In its current form BananaEndocarp is a dirty Tkinter script for interacting with MunkiWebAdmin2's API.
+In its current form BananaEndocarp is a script for interacting with MunkiWebAdmin2's API. We are using [@pudquick](https://github.com/pudquick)'s [nibbler](https://gist.github.com/pudquick/f27efd1ddcbf57be0d14031a5e692015).
 
-This was a dare to see if I could get it to work. Please don't use this in it's current form. Hopefully in the future I'll clean this up. If attempting to run in a AutoNBI or NBICreator NetInstall environment you will need to include the `Tcl` and `Tk` frameworks. See included `Tkinker_NetInstall_Frameworks` directory for assistance on packaging those frameworks.
+This has been tested and works great with Imagr.
+
+Create an API user for use with mwa2. Modify `BananaEndocarp.py` [variables](https://github.com/clburlison/BananaEndocarp/blob/nibbler/BananaEndocarp.py#L36-L55). Run `make dmg`. Throw the the `launchBananaEndocarp.sh` script into your Imagr work along with changing the path to the dmg. Modify your imagr workflow. Benefit.
+
+
+I owe you some better documentation...
