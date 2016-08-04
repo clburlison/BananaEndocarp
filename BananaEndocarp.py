@@ -33,11 +33,14 @@ from urllib2 import urlopen, URLError, HTTPError
 from nibbler import *
 
 
-listed_manifests = [
+# Included manifests
+included_manifests = [
                     "manifest A",
                     "manifest B",
                     "manifest C",
                     ]
+
+# Your mwa2 URL
 mwa2_url = "http://localhost:8000"
 
 # Authrozation key for mwa2 API. Create this string via:
@@ -48,7 +51,7 @@ authorization = "Basic ABBAABAABAABBAAB"
 # Default munki catalog
 default_catalog = "production"
 
-# You should only rarely use the following...AKA: almost never!
+# You should rarely use the following...AKA: almost never!
 default_managed_installs = []
 default_managed_uninstalls = []
 default_managed_updates = []
@@ -64,16 +67,20 @@ try:
 except IOError, ImportError:
     print "Unable to load nib!"
     exit(20)
-    # Figure out how to pass an exit(20) to the imagr script component.
 
 
 def show_msg(message):
-    """Show feedback to our label"""
+    """
+    Show feedback to our label field.
+    """
     feedback = n.views['feedback_result']
     feedback.setStringValue_(message)
 
+
 def get_serialnumber():
-    '''Returns the serial number of the Mac'''
+    """
+    Returns the serial number of the Mac.
+    """
     cmd = "/usr/sbin/ioreg -c \"IOPlatformExpertDevice\" | awk -F '\"' \
                                     '/IOPlatformSerialNumber/ {print $4}'"
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
@@ -82,31 +89,37 @@ def get_serialnumber():
     return out.strip()
 
 
-def download_file(url, temp_file=None):
-    """Download a simple file from the Internet."""
-    print("Download a file")
-    try:
-        if not temp_file:
-            temp_file = os.path.join(tempfile.mkdtemp(), 'tempdata')
-        f = urlopen(url)
-        with open(temp_file, "wb") as local_file:
-            local_file.write(f.read())
-        print("Download successful")
-    except HTTPError, e:
-        print("HTTP Error: %s, %s", e.code, url)
-    except URLError, e:
-        print("URL Error: %s, %s", e.reason, url)
-    try:
-        file_handle = open(temp_file)
-        data = file_handle.read()
-        file_handle.close()
-    except (OSError, IOError):
-        print("Couldn't read %s", temp_file)
-        return False
-    return data, temp_file
+def setItems(items):
+    """
+    Function to set items to appear in the NSPopUpButton.
+    """
+    menu = n.views['manifest_input']
+    menu.removeAllItems()
+    for item in items:
+        menu.addItemWithTitle_(item)
+
+
+def PopUpButton():
+    """
+    Return the manifest value from our selected PopUpButton item.
+    """
+    index = n.views['manifest_input'].indexOfSelectedItem()
+    values = n.views['manifest_input'].itemTitles()
+    return values[index]
+
+
+def exitScript():
+    """
+    Exit BananaEndocarp and continue the imagr workflow
+    """
+    print "Goodbye!"
+    n.quit()
 
 
 def api_caller(url, machine_serial, method='GET', data=None):
+    """
+    Funtion to make requests to the api end point.
+    """
     request = urllib2.Request(url,
                               headers={
                                "Authorization": authorization,
@@ -124,13 +137,30 @@ def api_caller(url, machine_serial, method='GET', data=None):
         return e
 
 
-def api_handler(included_manifests, user, display_name):
+def api_handler(BananaEndocarp, user, display_name):
+    """
+    Function to process api calls and return feedback to the user.
+    """
+    username = n.views['username_input'].stringValue()
+    hostname = n.views['hostname_input'].stringValue()
+    feedback = n.views['feedback_result']
+
+    # Get the current manifest selection
+    manifest = PopUpButton()
+
+    # Print values
+    print manifest
+    print username
+    print hostname
+
+    api_handler(manifest, username, hostname)
+
     machine_serial = get_serialnumber()
     url = mwa2_url + '/api/manifests/' + machine_serial
     print url
     data = {"catalogs": [default_catalog],
             "display_name": display_name,
-            "included_manifests": [included_manifests],
+            "BananaEndocarp": [BananaEndocarp],
             "managed_installs": default_managed_installs,
             "managed_uninstalls": default_managed_uninstalls,
             "managed_updates": default_managed_updates,
@@ -138,7 +168,9 @@ def api_handler(included_manifests, user, display_name):
             "user": user
             }
 
-    # check with api and make modifications if needed
+    # Check with api and make modifications if needed. We run this on a loop
+    # so it is possible to update the values if connection errors occurred,
+    # typos, etc.
     loop_handler = True
     x = 1
     while loop_handler:
@@ -178,50 +210,9 @@ def api_handler(included_manifests, user, display_name):
             loop_handler = False
 
 
-def setItems(items):
-    '''
-    Set the items to appear in the pop up list.
-    '''
-    menu = n.views['manifest_input']
-    menu.removeAllItems()
-    for item in items:
-        menu.addItemWithTitle_(item)
-
-
-def PopUpButton():
-    index = n.views['manifest_input'].indexOfSelectedItem()
-    values = n.views['manifest_input'].itemTitles()
-    return values[index]
-
-
-def exitScript():
-    '''Exit BananaEndocarp and don't continue the imagr workflow'''
-    print "Goodbye!"
-    n.quit()
-    # Figure out how to pass an exit(1) to the imagr script component.
-
-
-def runner():
-    '''Wrapper to call the getADGroup method on button click. Handles feedback
-    to feedback_result text field.'''
-    username = n.views['username_input'].stringValue()
-    hostname = n.views['hostname_input'].stringValue()
-    feedback = n.views['feedback_result']
-
-    # Get the current manifest selection
-    manifest = PopUpButton()
-
-    # Print values
-    print manifest
-    print username
-    print hostname
-
-    api_handler(manifest, username, hostname)
-
-
 def main():
     '''Main method.'''
-    n.attach(runner, 'continueButton')
+    n.attach(api_handler, 'continueButton')
     n.attach(exitScript, 'exitButton')
 
     # Debug statements
@@ -229,7 +220,7 @@ def main():
     # print n.views
 
     # Set values for PopUpButton
-    setItems(listed_manifests)
+    setItems(included_manifests)
 
     # Set default override state for the checkbox
     n.views['override_checkbox'].setState_(always_override)
