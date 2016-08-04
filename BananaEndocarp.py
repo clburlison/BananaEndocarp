@@ -48,7 +48,7 @@ listed_manifests = [
                     "manifestC",
                     ]
 mwa2_url = "http://localhost:8000"
-logo_url = "https://raw.githubusercontent.com/clburlison/BananaEndocarp/master/BananaEndocarp.gif"
+logo_url = "https://raw.githubusercontent.com/clburlison/BananaEndocarp/tkinker/BananaEndocarp.gif"
 
 authorization = "Basic ABBAABAABAABBAAB"
 default_catalog = "production"
