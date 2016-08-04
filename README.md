@@ -3,6 +3,8 @@ In its current form BananaEndocarp is a script for interacting with MunkiWebAdmi
 
 This has been tested and works great with Imagr.
 
+
+## Documentation 
 Create an API user for use with mwa2. Modify `BananaEndocarp.py` [variables](https://github.com/clburlison/BananaEndocarp/blob/nibbler/BananaEndocarp.py#L36-L55). Run `make dmg`. Throw the the `launchBananaEndocarp.sh` script into your Imagr work along with changing the path to the dmg. Modify your imagr workflow. Benefit.
 
 
