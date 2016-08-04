@@ -1,29 +1,26 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+'''
+BananaEndocarp
 
-"""
-BananaEndocarp is a 'nice' GUI built using Tkinter for interacting with mwa2's api.
-It was designed to work in a limited environment such as an NetInstall environment.
-It connects to a mwa2 instance utilizing the API to create a manifest per machine.
-
+BananaEndocarp is a GUI built using nibbler for interacting with mwa2's api.
+It was designed to work in a limited environment such as an NetInstall
+environment. It connects to a mwa2 instance utilizing the API to create
+a manifest per machine based off of the serial number.
 
 
 Author: Clayton Burlison <https://clburlison.com>
-Last modified: May 3, 2016
-Version: 1.0
+Last modified: Aug 4, 2016
+Version: 2.0
 
+Referenced code:
+https://gist.github.com/pudquick/f27efd1ddcbf57be0d14031a5e692015
+https://github.com/typesupply/vanilla/blob/master/Lib/vanilla/vanillaPopUpButton.py
+https://github.com/typesupply/vanilla/blob/master/Lib/vanilla/vanillaCheckBox.py
+'''
 
-
-Lots of code from:
-  http://zetcode.com/gui/tkinter/layout/
-  http://stackoverflow.com/a/1451343/4811765 - tab focus window
-  http://stackoverflow.com/a/10018670/4811765 - center window
-  http://stackoverflow.com/a/24065533/4811765 - python exceptions
-  https://goo.gl/Vw0S7p - embed image
-"""
-
-import sys
 import os
+import sys
 import time
 import tempfile
 import httplib
@@ -33,81 +30,57 @@ import json
 import subprocess
 from AppKit import NSWorkspace, NSBundle
 from urllib2 import urlopen, URLError, HTTPError
+from nibbler import *
 
-try:
-    # Python2
-    from Tkinter import *
-    import tkMessageBox as messagebox
-except ImportError:
-    # Python3
-    from tkinter import *
 
 listed_manifests = [
-                    "manifestA",
-                    "manifestB",
-                    "manifestC",
+                    "manifest A",
+                    "manifest B",
+                    "manifest C",
                     ]
 mwa2_url = "http://localhost:8000"
-logo_url = "https://raw.githubusercontent.com/clburlison/BananaEndocarp/master/BananaEndocarp.gif"
 
+# Authrozation key for mwa2 API. Create this string via:
+#   python -c 'import base64; print "Authorization: Basic %s" % base64.b64encode("username:password")'
+# Make sure and only paste the "Basic STRINGVALUE"
 authorization = "Basic ABBAABAABAABBAAB"
+
+# Default munki catalog
 default_catalog = "production"
+
+# You should only rarely use the following...AKA: almost never!
 default_managed_installs = []
 default_managed_uninstalls = []
 default_managed_updates = []
 default_optional_installs = []
-show_success_status = True # When set to True, success status messages are displayed. DEFAULT = True
-always_override = False # When set to True, always override repo manifest with values from GUI prompt. DEFAULT = False
+
+# When set to True, always override repo manifest with values from GUI prompt.
+# DEFAULT value for always_override  = False
+always_override = False
+
+try:
+    script_path = os.path.dirname(os.path.realpath(__file__))
+    n = Nibbler(os.path.join(script_path, 'BananaEndocarp.nib'))
+except IOError, ImportError:
+    print "Unable to load nib!"
+    exit(20)
+    # Figure out how to pass an exit(20) to the imagr script component.
 
 
-class BananaError(Exception):
-    """General exception for error messages"""
-    pass
-
-def show_warning(msg):
-    """General method for warning messages. Returns bool values."""
-    if always_override:
-        return always_override
-    else:
-        return messagebox.askyesno("Warning","%s" % msg)
-
-def show_msg(msg):
-    """General method for notification messages"""
-    if show_success_status:
-        messagebox.showinfo("Notification","%s" % msg)
-
-def focus_next_window(event):
-    event.widget.tk_focusNext().focus()
-    return "break"
-
-def focus_prev_window(event):
-    event.widget.tk_focusPrev().focus()
-    return "break"
-
-def center(win):
-    """
-    centers a Tkinter window. 'win' is the root or toplevel window to center
-    """
-    win.update_idletasks()
-    width = win.winfo_width()
-    frm_width = win.winfo_rootx() - win.winfo_x()
-    win_width = width + 2 * frm_width
-    height = win.winfo_height()
-    titlebar_height = win.winfo_rooty() - win.winfo_y()
-    win_height = height + titlebar_height + frm_width
-    x = win.winfo_screenwidth() // 2 - win_width // 2
-    y = win.winfo_screenheight() // 2 - win_height // 2
-    win.geometry('{}x{}+{}+{}'.format(width, height, x, y))
-    win.deiconify()
+def show_msg(message):
+    """Show feedback to our label"""
+    feedback = n.views['feedback_result']
+    feedback.setStringValue_(message)
 
 def get_serialnumber():
     '''Returns the serial number of the Mac'''
     cmd = "/usr/sbin/ioreg -c \"IOPlatformExpertDevice\" | awk -F '\"' \
                                     '/IOPlatformSerialNumber/ {print $4}'"
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)
+                            stderr=subprocess.PIPE)
     (out, err) = proc.communicate()
     return out.strip()
+
 
 def download_file(url, temp_file=None):
     """Download a simple file from the Internet."""
@@ -132,12 +105,13 @@ def download_file(url, temp_file=None):
         return False
     return data, temp_file
 
+
 def api_caller(url, machine_serial, method='GET', data=None):
     request = urllib2.Request(url,
-        headers = {
-            "Authorization": authorization,
-            "Content-Type": "application/json"
-        }, data = json.dumps(data))
+                              headers={
+                               "Authorization": authorization,
+                               "Content-Type": "application/json"
+                              }, data=json.dumps(data))
     request.get_method = lambda: method
     try:
         f = urllib2.urlopen(request)
@@ -148,6 +122,7 @@ def api_caller(url, machine_serial, method='GET', data=None):
         return (e.code, e.read())
     except urllib2.URLError as e:
         return e
+
 
 def api_handler(included_manifests, user, display_name):
     machine_serial = get_serialnumber()
@@ -161,7 +136,7 @@ def api_handler(included_manifests, user, display_name):
             "managed_updates": default_managed_updates,
             "optional_installs": default_optional_installs,
             "user": user
-           }
+            }
 
     # check with api and make modifications if needed
     loop_handler = True
@@ -171,133 +146,96 @@ def api_handler(included_manifests, user, display_name):
         x += 1
         get_request = api_caller(url, machine_serial)
         print "API call status code: " + str(get_request[0])
-        if get_request[0] == 200: # manifest already exists
-            error = "A manifest was already found for this machine."
-            choice = show_warning('%s \n\nDo you wish to override it?' % error)
-            print "Override choice was: %s" % str(choice)
-            if choice:
+        if get_request[0] == 200:  # manifest already exists
+            checkbox = n.views['override_checkbox'].state()
+            print "checkbox state is %s" % str(checkbox)
+            if checkbox == 1:
                 delete_request = api_caller(url, machine_serial, 'DELETE')
                 if delete_request[0] == 204:
-                    msg = "SUCESS: A manifest was deleted"
-                    show_msg(msg)
+                    show_msg(u"✅ SUCESS: A manifest was deleted")
                 else:
                     print delete_request
-                    error = "An error occurred while deleting the previous manifest."
-                    raise BananaError('%s \n\nNo modifications have been made.' % error)
+                    error = u"❌ An error occurred while deleting the previous manifest."
+                    show_msg(error)
             else:
-                raise BananaError('No modifications have been made.')
-        elif get_request[0] == 401: # unauthorized attempt
-            error = "An unauthorized attempt to make modifications. Please verify your API key."
-            raise BananaError('%s \n\nNo modifications have been made.' % error)
-        elif get_request[0] == 404: # manifest does not exist
+                error = u"❌ A manifest was already found for this machine."
+                show_msg(error)
+                loop_handler = False
+        elif get_request[0] == 401:  # unauthorized attempt
+            error = u"❌ An unauthorized attempt to make modifications. Please verify your API key."
+            show_msg(error)
+            loop_handler = False
+        elif get_request[0] == 404:  # manifest does not exist
             post_request = api_caller(url, machine_serial, 'POST', data)
             if post_request[0] == 201:
-                loop_handler = False
-                msg = "SUCESS: A manifest was created"
-                show_msg(msg)
+                show_msg(u"✅ SUCESS: A manifest was created")
             else:
                 error = 'Unable to create our manifest'
-                raise BananaError('Error code: %s \n %s \n\nNo modifications have been made.' % get_request[0], error)
+                show_msg(u"❌ Error code: %s \n %s \n\nNo modifications have been made." % get_request[0], error)
+            loop_handler = False
         else:
-            raise BananaError('Error code: %s \n\nNo modifications have been made.' % get_request[0])
+            show_msg(u"❌ Error code: %s \n\nNo modifications have been made." % get_request[0])
+            loop_handler = False
 
-class BananaEndocarp(Frame):
-    def __init__(self, parent):
-        Frame.__init__(self, parent)
-        self.parent = parent
-        self.initUI()
 
-    def initUI(self):
-        self.parent.title("BananaEndocarp")
-        self.pack(fill=BOTH, expand=True)
+def setItems(items):
+    '''
+    Set the items to appear in the pop up list.
+    '''
+    menu = n.views['manifest_input']
+    menu.removeAllItems()
+    for item in items:
+        menu.addItemWithTitle_(item)
 
-        # If logo_url is not set don't display a logo
-        try:
-            logo = "/tmp/logo_url_logo.gif"
-            (data, local_path) = download_file(logo_url, logo)
-            image = PhotoImage(file=logo)
-            image_logo = Label(self, image=image)
-            image_logo.image = image
-            image_logo.grid(row=0, column=0)
-        except:
-            pass
 
-        label = Label(self, text="Select a munki manifest template:")
-        label.grid(sticky=W, row=1, column=0)
+def PopUpButton():
+    index = n.views['manifest_input'].indexOfSelectedItem()
+    values = n.views['manifest_input'].itemTitles()
+    return values[index]
 
-        drop_down_var = StringVar(self)
-        drop_down_var.set("                        ") # set initial value
 
-        drop_down = OptionMenu(self, drop_down_var, *listed_manifests)
-        drop_down.config(bg = "#ffffff")  # Set background color for the widget
-        drop_down.grid(sticky=W, row=2, column=0)
+def exitScript():
+    '''Exit BananaEndocarp and don't continue the imagr workflow'''
+    print "Goodbye!"
+    n.quit()
+    # Figure out how to pass an exit(1) to the imagr script component.
 
-        label = Label(self, text="User Name:", font="-weight bold")
-        label.grid(sticky=W, row=3, column=0)
 
-        label = Label(self, text="IE: John Smith. Blank for lab machines")
-        label.grid(sticky=W, row=4, column=0)
+def runner():
+    '''Wrapper to call the getADGroup method on button click. Handles feedback
+    to feedback_result text field.'''
+    username = n.views['username_input'].stringValue()
+    hostname = n.views['hostname_input'].stringValue()
+    feedback = n.views['feedback_result']
 
-        name_text = Text(self, height=1, width=30, font=("Helvetica"))
-        name_text.grid(sticky=W, row=5, column=0)
-        name_text.bind("<Tab>", focus_next_window)
-        name_text.bind("<Shift-Tab>", focus_prev_window)
+    # Get the current manifest selection
+    manifest = PopUpButton()
 
-        label = Label(self, text="Hostname:", font="-weight bold")
-        label.grid(sticky=W, row=6,column=0)
+    # Print values
+    print manifest
+    print username
+    print hostname
 
-        label = Label(self, text="IE: 011-476-mac01.")
-        label.grid(sticky=W, row=7,column=0)
-
-        display_text = Text(self, height=1, width=30, font=("Helvetica"))
-        display_text.grid(sticky=W, row=8, column=0)
-        display_text.bind("<Tab>", focus_next_window)
-        display_text.bind("<Shift-Tab>", focus_prev_window)
-
-        cont_button = Button(self,
-                             text="Continue",
-                             command= lambda:
-                             self.cont_button(drop_down_var.get(),
-                                              name_text.get(1.0, "end-1c"),
-                                              display_text.get("1.0","end-1c")
-                                              ))
-        cont_button.grid(row=9, column=0)
-
-    def focus_next_window(event):
-        self.event.widget.tk_focusNext().focus()
-        return("break")
-
-    def cont_button(self, included_manifests, user, display_name):
-        print "Dropdown was: ", included_manifests
-        print "User Name was: ", user
-        print "Display was: %s \n" % display_name
-        try:
-            api_handler(included_manifests, user, display_name)
-        except BananaError, e:
-            messagebox.showwarning("Error","%s" % e)
-        self.quit()
+    api_handler(manifest, username, hostname)
 
 
 def main():
-    # Disable the Rocket ship in dock
-    bundle = NSBundle.mainBundle()
-    info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
-    info['LSUIElement'] = '1'
+    '''Main method.'''
+    n.attach(runner, 'continueButton')
+    n.attach(exitScript, 'exitButton')
 
-    # disturbing hack warning!
-    # this works around an issue with App Transport Security on 10.11
-    # Reference: https://github.com/munki/munki/commit/1dd8329d665d1d724ddc56ea703552effcd42db8
-    bundle = NSBundle.mainBundle()
-    info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
-    info['NSAppTransportSecurity'] = {'NSAllowsArbitraryLoads': True}
+    # Debug statements
+    # print n.nib_contents
+    # print n.views
 
-    # Launch our GUI
-    root = Tk()
-    root.resizable(0,0) # disable resizing the window
-    app = BananaEndocarp(root)
-    center(root)
-    root.mainloop()
+    # Set values for PopUpButton
+    setItems(listed_manifests)
 
+    # Set default override state for the checkbox
+    n.views['override_checkbox'].setState_(always_override)
+
+    n.hidden = False
+    n.run()
 
 if __name__ == '__main__':
     main()

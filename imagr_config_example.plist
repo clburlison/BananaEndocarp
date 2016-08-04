@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>workflows</key>
+	<array>
+		<dict>
+			<key>name</key>
+			<string>BananaEndocarp Test</string>
+			<key>restart_action</key>
+			<string>none</string>
+			<key>description</key>
+			<string>Simple tester</string>
+			<key>components</key>
+			<array>
+				<dict>
+					<key>type</key>
+					<string>script</string>
+					<key>url</key>
+					<string>http://server/scripts/launchBananaEndocarp.sh</string>
+					<key>first_boot</key>
+					<false/>
+				</dict>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
