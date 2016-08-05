@@ -11,7 +11,7 @@ a manifest per machine based off of the serial number.
 
 Author: Clayton Burlison <https://clburlison.com>
 Last modified: Aug 4, 2016
-Version: 2.0
+Version: 2.1
 
 Referenced code:
 https://gist.github.com/pudquick/f27efd1ddcbf57be0d14031a5e692015
