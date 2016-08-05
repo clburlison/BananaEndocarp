@@ -34,16 +34,16 @@ from nibbler import *
 
 
 # Included manifests
-included_manifests = [
-                    "manifest A",
-                    "manifest B",
-                    "manifest C",
-                    ]
+included_manifests_options = [
+    "manifest A",
+    "manifest B",
+    "manifest C",
+]
 
 # Your mwa2 URL
 mwa2_url = "http://localhost:8000"
 
-# Authrozation key for mwa2 API. Create this string via:
+# Authorization key for mwa2 API. Create this string via:
 #   python -c 'import base64; print "Authorization: Basic %s" % base64.b64encode("username:password")'
 # Make sure and only paste the "Basic STRINGVALUE"
 authorization = "Basic ABBAABAABAABBAAB"
@@ -69,7 +69,7 @@ except IOError, ImportError:
     exit(20)
 
 
-def show_msg(message):
+def showMsg(message):
     """
     Show feedback to our label field.
     """
@@ -77,7 +77,7 @@ def show_msg(message):
     feedback.setStringValue_(message)
 
 
-def get_serialnumber():
+def getSerialNumber():
     """
     Returns the serial number of the Mac.
     """
@@ -110,13 +110,13 @@ def PopUpButton():
 
 def exitScript():
     """
-    Exit BananaEndocarp and continue the imagr workflow
+    Exit BananaEndocarp.
     """
     print "Goodbye!"
     n.quit()
 
 
-def api_caller(url, machine_serial, method='GET', data=None):
+def apiCaller(url, machine_serial, method='GET', data=None):
     """
     Funtion to make requests to the api end point.
     """
@@ -137,7 +137,7 @@ def api_caller(url, machine_serial, method='GET', data=None):
         return e
 
 
-def api_handler(BananaEndocarp, user, display_name):
+def apiHandler():
     """
     Function to process api calls and return feedback to the user.
     """
@@ -153,66 +153,65 @@ def api_handler(BananaEndocarp, user, display_name):
     print username
     print hostname
 
-    api_handler(manifest, username, hostname)
-
-    machine_serial = get_serialnumber()
+    machine_serial = getSerialNumber()
     url = mwa2_url + '/api/manifests/' + machine_serial
     print url
     data = {"catalogs": [default_catalog],
-            "display_name": display_name,
-            "BananaEndocarp": [BananaEndocarp],
+            "display_name": hostname,
+            "included_manifests": [manifest],
             "managed_installs": default_managed_installs,
             "managed_uninstalls": default_managed_uninstalls,
             "managed_updates": default_managed_updates,
             "optional_installs": default_optional_installs,
-            "user": user
+            "user": username
             }
 
-    # Check with api and make modifications if needed. We run this on a loop
-    # so it is possible to update the values if connection errors occurred,
-    # typos, etc.
+    # Run our api caller on a loop so we can handle errors,
+    # typos, and modifications.
     loop_handler = True
     x = 1
     while loop_handler:
         print "We're on api loop %d" % (x)
         x += 1
-        get_request = api_caller(url, machine_serial)
+        get_request = apiCaller(url, machine_serial)
         print "API call status code: " + str(get_request[0])
         if get_request[0] == 200:  # manifest already exists
             checkbox = n.views['override_checkbox'].state()
             print "checkbox state is %s" % str(checkbox)
             if checkbox == 1:
-                delete_request = api_caller(url, machine_serial, 'DELETE')
+                delete_request = apiCaller(url, machine_serial, 'DELETE')
                 if delete_request[0] == 204:
-                    show_msg(u"✅ SUCESS: A manifest was deleted")
+                    showMsg(u"✅ SUCESS: A manifest was deleted")
                 else:
                     print delete_request
                     error = u"❌ An error occurred while deleting the previous manifest."
-                    show_msg(error)
+                    showMsg(error)
             else:
                 error = u"❌ A manifest was already found for this machine."
-                show_msg(error)
+                showMsg(error)
                 loop_handler = False
         elif get_request[0] == 401:  # unauthorized attempt
             error = u"❌ An unauthorized attempt to make modifications. Please verify your API key."
-            show_msg(error)
+            showMsg(error)
             loop_handler = False
         elif get_request[0] == 404:  # manifest does not exist
-            post_request = api_caller(url, machine_serial, 'POST', data)
+            post_request = apiCaller(url, machine_serial, 'POST', data)
             if post_request[0] == 201:
-                show_msg(u"✅ SUCESS: A manifest was created")
+                showMsg(u"✅ SUCESS: A manifest was created")
             else:
                 error = 'Unable to create our manifest'
-                show_msg(u"❌ Error code: %s \n %s \n\nNo modifications have been made." % get_request[0], error)
+                showMsg(u"❌ Error code: %s \n %s \n\nNo modifications have been made." % get_request[0], error)
             loop_handler = False
         else:
-            show_msg(u"❌ Error code: %s \n\nNo modifications have been made." % get_request[0])
+            showMsg(u"❌ Error code: %s \n\nNo modifications have been made." % get_request[0])
             loop_handler = False
 
 
 def main():
-    '''Main method.'''
-    n.attach(api_handler, 'continueButton')
+    """
+    Main method to handle setting GUI properties and attaching buttons.
+    """
+    n.attach(apiHandler, 'continueButton')
     n.attach(exitScript, 'exitButton')
 
     # Debug statements
@@ -220,7 +219,7 @@ def main():
     # print n.views
 
     # Set values for PopUpButton
-    setItems(included_manifests)
+    setItems(included_manifests_options)
 
     # Set default override state for the checkbox
     n.views['override_checkbox'].setState_(always_override)
