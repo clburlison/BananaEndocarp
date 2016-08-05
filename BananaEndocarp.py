@@ -28,7 +28,6 @@ import urllib
 import urllib2
 import json
 import subprocess
-from AppKit import NSWorkspace, NSBundle
 from urllib2 import urlopen, URLError, HTTPError
 from nibbler import *
 
@@ -91,7 +90,7 @@ def getSerialNumber():
 
 def setItems(items):
     """
-    Function to set items to appear in the NSPopUpButton.
+    Function to set items to appear in the drop down menu.
     """
     menu = n.views['manifest_input']
     menu.removeAllItems()
@@ -99,9 +98,9 @@ def setItems(items):
         menu.addItemWithTitle_(item)
 
 
-def PopUpButton():
+def getItem():
     """
-    Return the manifest value from our selected PopUpButton item.
+    Return the manifest value from our selected drop down menu item.
     """
     index = n.views['manifest_input'].indexOfSelectedItem()
     values = n.views['manifest_input'].itemTitles()
@@ -143,10 +142,9 @@ def apiHandler():
     """
     username = n.views['username_input'].stringValue()
     hostname = n.views['hostname_input'].stringValue()
-    feedback = n.views['feedback_result']
 
     # Get the current manifest selection
-    manifest = PopUpButton()
+    manifest = getItem()
 
     # Print values
     print manifest
@@ -218,7 +216,7 @@ def main():
     # print n.nib_contents
     # print n.views
 
-    # Set values for PopUpButton
+    # Set values for drop down menu
     setItems(included_manifests_options)
 
     # Set default override state for the checkbox
