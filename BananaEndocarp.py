@@ -152,7 +152,7 @@ def apiHandler():
     print hostname
 
     machine_serial = getSerialNumber()
-    url = mwa2_url + '/api/manifests/' + machine_serial
+    url = "{0}{1}{2}".format(mwa2_url, '/api/manifests/', machine_serial)
     print url
     data = {"catalogs": [default_catalog],
             "display_name": hostname,
@@ -169,39 +169,40 @@ def apiHandler():
     loop_handler = True
     x = 1
     while loop_handler:
-        print "We're on api loop %d" % (x)
+        print "We're on api loop {0}".format(x)
         x += 1
+        no_mod = " \n\nNo modifications have been made."
         get_request = apiCaller(url, machine_serial)
-        print "API call status code: " + str(get_request[0])
+        print "API call status code: {0}".format(get_request[0])
         if get_request[0] == 200:  # manifest already exists
             checkbox = n.views['override_checkbox'].state()
-            print "checkbox state is %s" % str(checkbox)
+            print "checkbox state is {0}".format(checkbox)
             if checkbox == 1:
                 delete_request = apiCaller(url, machine_serial, 'DELETE')
                 if delete_request[0] == 204:
-                    showMsg(u"✅ SUCESS: A manifest was deleted")
+                    showMsg("SUCESS: A manifest was deleted")
                 else:
                     print delete_request
-                    error = u"❌ An error occurred while deleting the previous manifest."
-                    showMsg(error)
+                    showMsg("ERROR: An error occurred while deleting the"
+                            "previous manifest.{0}".format(no_mod))
             else:
-                error = u"❌ A manifest was already found for this machine."
-                showMsg(error)
+                showMsg("WARNING: A manifest was already found for"
+                        "this machine.{0}".format(no_mod))
                 loop_handler = False
         elif get_request[0] == 401:  # unauthorized attempt
-            error = u"❌ An unauthorized attempt to make modifications. Please verify your API key."
-            showMsg(error)
+            showMsg("ERROR: An unauthorized attempt to make modifications."
+                    "Please verify your API key.{0}".format(no_mod))
             loop_handler = False
         elif get_request[0] == 404:  # manifest does not exist
             post_request = apiCaller(url, machine_serial, 'POST', data)
             if post_request[0] == 201:
-                showMsg(u"✅ SUCESS: A manifest was created")
+                showMsg("SUCESS: A manifest was created")
             else:
-                error = 'Unable to create our manifest'
-                showMsg(u"❌ Error code: %s \n %s \n\nNo modifications have been made." % get_request[0], error)
+                showMsg("ERROR: {0} \n {1}{2}".format(get_request[0],
+                        "Unable to create our manifest", no_mod))
             loop_handler = False
         else:
-            showMsg(u"❌ Error code: %s \n\nNo modifications have been made." % get_request[0])
+            showMsg("ERROR: {0}{1}".format(get_request[0], no_mod))
             loop_handler = False
 
 
