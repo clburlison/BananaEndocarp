@@ -15,5 +15,5 @@ dmg:
 	rm -rf /tmp/${PROJECT}-build
 	mkdir -p /tmp/${PROJECT}-build/
 	cp -R {README.md,BananaEndocarp.nib,BananaEndocarp.py,nibbler.py} /tmp/${PROJECT}-build
-	hdiutil create -srcfolder /tmp/${PROJECT}-build -volname "${PROJECT}" -format UDRO -o ${PROJECT}.dmg
+	hdiutil create -srcfolder /tmp/${PROJECT}-build -volname "${PROJECT}" -format UDRW -o ${PROJECT}.dmg
 	rm -rf /tmp/${PROJECT}-build
