@@ -10,25 +10,19 @@ a manifest per machine based off of the serial number.
 
 
 Author: Clayton Burlison <https://clburlison.com>
-Last modified: Aug 4, 2016
-Version: 2.1
+Last modified: Sept 8, 2016
+Version: 2.2
 
 Referenced code:
-https://gist.github.com/pudquick/f27efd1ddcbf57be0d14031a5e692015
+https://github.com/pudquick/nibbler
 https://github.com/typesupply/vanilla/blob/master/Lib/vanilla/vanillaPopUpButton.py
 https://github.com/typesupply/vanilla/blob/master/Lib/vanilla/vanillaCheckBox.py
 '''
 
 import os
-import sys
-import time
-import tempfile
-import httplib
-import urllib
 import urllib2
 import json
 import subprocess
-from urllib2 import urlopen, URLError, HTTPError
 from nibbler import *
 
 
@@ -59,6 +53,10 @@ default_optional_installs = []
 # When set to True, always override repo manifest with values from GUI prompt.
 # DEFAULT value for always_override  = False
 always_override = False
+
+################
+# No variables below this point
+################
 
 try:
     script_path = os.path.dirname(os.path.realpath(__file__))
@@ -117,7 +115,7 @@ def exitScript():
 
 def apiCaller(url, machine_serial, method='GET', data=None):
     """
-    Funtion to make requests to the api end point.
+    Function to make requests to the api end point.
     """
     request = urllib2.Request(url,
                               headers={

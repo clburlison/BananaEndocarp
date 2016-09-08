@@ -62,5 +62,5 @@ Major thanks to:
 
 | Author  |  Project Link |
 |---|---|
-| [@pudquick](https://github.com/pudquick) | [nibbler](https://gist.github.com/pudquick/f27efd1ddcbf57be0d14031a5e692015) |
+| [@pudquick](https://github.com/pudquick) | [nibbler](https://github.com/pudquick/nibbler) |
 | [Munki](https://github.com/munki) | [MunkiWebAdmin2](https://github.com/munki/mwa2/) |
