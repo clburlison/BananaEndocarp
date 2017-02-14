@@ -46,7 +46,7 @@ The above demo will result in a manifest that looks like:
 
 ## Documentation 
 * Create an API user for use with mwa2. 
-* Modify `BananaEndocarp.py` [variables](https://github.com/clburlison/BananaEndocarp/blob/nibbler/BananaEndocarp.py#L36-L62). 
+* Modify `BananaEndocarp.py` [variables](https://github.com/clburlison/BananaEndocarp/blob/nibbler/BananaEndocarp.py#L29-L55). 
 * Run `make dmg`. 
 * Throw the the `launchBananaEndocarp.sh` script into your Imagr workflow along with changing the path to the dmg. 
 * Modify your imagr workflow. 
